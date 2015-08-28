@@ -1,0 +1,2 @@
+BOARDINC = $(GFXLIB)/boards/base/ST-NUCLEO-F401RE-ILI9163/ChibiOS_Board
+BOARDSRC = $(BOARDINC)/board.c
