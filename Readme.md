@@ -12,10 +12,13 @@ Upstream's Git repository: [https://bitbucket.org/Tectu/ugfx](https://bitbucket.
 
 ## Added display drivers
 
-* ILI9163
+* 1.44' SPI 128*128 V1.1 LCD -- ILI9163
     Sample program runs on STM32 NUCLEO-F401RE + 1.44 inch 128x128 color LCD panel.  
-    see /boards/base/ST-NUCLEO-F401RE-ILI9163/Readme.md for more detail.  
-    [/boards/base/ST-NUCLEO-F401RE-ILI9163/Readme.md](boards/base/ST-NUCLEO-F401RE-ILI9163/Readme.md)
+    For more detail, see [/boards/base/ST-NUCLEO-F401RE-ILI9163/Readme.md](boards/base/ST-NUCLEO-F401RE-ILI9163/Readme.md).
+
+* 2.4" TFT LCD SHIELD -- ILI9341
+    Sample program runs on STM32 NUCLEO-F401RE + 2.4 inch 240x320 color LCD panel.
+    For more detail, see [/boards/base/ST-NUCLEO-F401RE-ILI9341/Readme.md](boards/base/ST-NUCLEO-F401RE-ILI9341/Readme.md).
 
 ## Author
 
