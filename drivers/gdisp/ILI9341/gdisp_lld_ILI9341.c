@@ -43,6 +43,42 @@
 
 #include "drivers/gdisp/ILI9341/ILI9341.h"
 
+#ifndef ILI9341_MAGIC_SETTING
+#define ILI9341_MAGIC_SETTING		TRUE
+#endif
+
+#ifndef ILI9341_POWERCTL1_PARAM
+#define ILI9341_POWERCTL1_PARAM		0x26
+#endif
+
+#ifndef ILI9341_POWERCTL2_PARAM
+#define ILI9341_POWERCTL2_PARAM		0x11
+#endif
+
+#ifndef ILI9341_VCOMCTL1_PARAM
+#define ILI9341_VCOMCTL1_PARAM		0x353e
+#endif
+
+#ifndef ILI9341_VCOMCTL2_PARAM
+#define ILI9341_VCOMCTL2_PARAM		0xbe
+#endif
+
+#ifndef ILI9341_MEMACCESS_PARAM
+#define ILI9341_MEMACCESS_PARAM		0x48
+#endif
+
+#ifndef ILI9341_PIXFORMATSET_PARAM
+#define ILI9341_PIXFORMATSET_PARAM	0x55
+#endif
+
+#ifndef ILI9341_DISPLAY_INVERSION
+#define ILI9341_DISPLAY_INVERSION	FALSE
+#endif
+
+#ifndef ILI9341_3GAMMA_SETTING
+#define ILI9341_3GAMMA_SETTING		TRUE
+#endif
+
 /*===========================================================================*/
 /* Driver local functions.                                                   */
 /*===========================================================================*/
@@ -90,8 +126,12 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 
 	write_index(g, 0x01); //software reset
 	gfxSleepMilliseconds(5);
+#if ILI9341_DISPLAY_INVERSION
+	write_index(g, 0x21); //display inversion ON
+#endif
 	write_index(g, 0x28);
 	// display off
+#if ILI9341_MAGIC_SETTING
 	//---------------------------------------------------------
 	// magic?
 	write_index(g, 0xcf);
@@ -119,31 +159,34 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	write_index(g, 0xea);
 	write_data(g, 0x00);
 	write_data(g, 0x00);
+#endif
 	//------------power control------------------------------
 	write_index(g, 0xc0); //power control
-	write_data(g, 0x26);
+	write_data(g, ILI9341_POWERCTL1_PARAM);
 	write_index(g, 0xc1); //power control
-	write_data(g, 0x11);
+	write_data(g, ILI9341_POWERCTL2_PARAM);
 	//--------------VCOM
 	write_index(g, 0xc5); //vcom control
-	write_data(g, 0x35);//35
-	write_data(g, 0x3e);//3E
+	write_data(g, ILI9341_VCOMCTL1_PARAM >> 8);
+	write_data(g, ILI9341_VCOMCTL1_PARAM & 0xff);
 	write_index(g, 0xc7); //vcom control
-	write_data(g, 0xbe); // 0x94
+	write_data(g, ILI9341_VCOMCTL2_PARAM);
 	//------------memory access control------------------------
 	write_index(g, 0x36);
 	// memory access control
-	write_data(g, 0x48); //0048 my,mx,mv,ml,BGR,mh,0.0
+	write_data(g, ILI9341_MEMACCESS_PARAM); // my,mx,mv,ml,BGR,mh,0.0
 	write_index(g, 0x3a); // pixel format set
-	write_data(g, 0x55);//16bit /pixel
+	write_data(g, ILI9341_PIXFORMATSET_PARAM);
 	//----------------- frame rate------------------------------
 	write_index(g, 0xb1);
 	// frame rate
 	write_data(g, 0x00);
 	write_data(g, 0x1B); //70
 	//----------------Gamma---------------------------------
+#if ILI9341_3GAMMA_SETTING
 	write_index(g, 0xf2); // 3Gamma Function Disable
 	write_data(g, 0x08);
+#endif
 	write_index(g, 0x26);
 	write_data(g, 0x01); // gamma set 4 gamma curve 01/02/04/08
 
@@ -214,12 +257,12 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	write_index(g, 0x29); // display on
 	gfxSleepMilliseconds(100);
 
-    // Finish Init
+	// Finish Init
     post_init_board(g);
 
  	// Release the bus
 	release_bus(g);
-	
+
 	/* Turn on the back-light */
 	set_backlight(g, GDISP_INITIAL_BACKLIGHT);
 
