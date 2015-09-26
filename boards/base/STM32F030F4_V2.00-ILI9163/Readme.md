@@ -1,6 +1,6 @@
 # A sample of ILI9163 128x128 SPI color LCD panel
 
-![STM32F030F4-V2.00+ILI9163](http://i.imgur.com/8oWQI7h.jpg)
+![STM32F030F4-V2.00+ILI9163](http://i.imgur.com/jiX3zG5.jpg)
 
 This sample programs runs on a board of STM32F030F4P6 and ChibiOS v3.
 
