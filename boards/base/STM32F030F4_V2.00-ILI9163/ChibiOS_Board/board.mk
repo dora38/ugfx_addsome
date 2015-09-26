@@ -1,0 +1,2 @@
+BOARDINC = $(GFXLIB)/boards/base/STM32F030F4_V2.00-ILI9163/ChibiOS_Board
+BOARDSRC = $(BOARDINC)/board.c
