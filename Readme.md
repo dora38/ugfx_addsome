@@ -16,6 +16,9 @@ Upstream's Git repository: [https://bitbucket.org/Tectu/ugfx](https://bitbucket.
     Sample program runs on STM32 NUCLEO-F401RE + 1.44 inch 128x128 color LCD panel.  
     For more detail, see [/boards/base/ST-NUCLEO-F401RE-ILI9163/Readme.md](boards/base/ST-NUCLEO-F401RE-ILI9163/Readme.md).
 
+    Running in another Cortex-M0 board, STM32F030F4-V2.00.  
+    For more detail, see [/boards/base/STM32F030F4_V2.00-ILI9163/Readme.md](boards/base/STM32F030F4_V2.00-ILI9163/Readme.md).
+
 * 2.4" TFT LCD SHIELD -- ILI9341
     Sample program runs on STM32 NUCLEO-F401RE + 2.4 inch 240x320 color LCD panel.
     For more detail, see [/boards/base/ST-NUCLEO-F401RE-ILI9341/Readme.md](boards/base/ST-NUCLEO-F401RE-ILI9341/Readme.md).
