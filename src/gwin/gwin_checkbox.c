@@ -55,6 +55,23 @@ static void SendCheckboxEvent(GWidgetObject *gw) {
 	}
 #endif
 
+#if GINPUT_NEED_KEYBOARD || GWIN_NEED_KEYBOARD
+	static void CheckboxKeyboard(GWidgetObject* gw, GEventKeyboard* pke)
+	{
+		// Only react on KEYDOWN events. Ignore KEYUP events.
+		if (pke->keystate & GKEYSTATE_KEYUP) {
+			return;
+		}
+
+		// ENTER and SPACE keys to check/uncheck the checkbox
+		if (pke->c[0] == GKEY_ENTER || pke->c[0] == GKEY_SPACE) {
+			gw->g.flags ^= GCHECKBOX_FLG_CHECKED;
+		}
+
+		_gwinUpdate((GHandle)gw);
+	}
+#endif
+
 #if GINPUT_NEED_TOGGLE
 	static void CheckboxToggleOn(GWidgetObject *gw, uint16_t role) {
 		(void) role;
@@ -89,6 +106,11 @@ static const gwidgetVMT checkboxVMT = {
 			CheckboxMouseDown,		// Process mouse down events
 			0,						// Process mouse up events (NOT USED)
 			0,						// Process mouse move events (NOT USED)
+		},
+	#endif
+	#if GINPUT_NEED_KEYBOARD || GWIN_NEED_KEYBOARD
+		{
+			CheckboxKeyboard		// Process keyboard events
 		},
 	#endif
 	#if GINPUT_NEED_TOGGLE
@@ -174,6 +196,9 @@ void gwinCheckboxDraw_CheckOnLeft(GWidgetObject *gw, void *param) {
 	if (gw->g.flags & GCHECKBOX_FLG_CHECKED)
 		gdispGFillArea(gw->g.display, gw->g.x+df, gw->g.y+df, ld-2*df, ld-2*df, pcol->fill);
 
+	// Render highlighted border if focused
+	_gwidgetDrawFocusRect(gw, 1, 1, ld-2, ld-2);
+
 	// Draw the text
 	gdispGFillStringBox(gw->g.display, gw->g.x+ld+1, gw->g.y, gw->g.width-ld-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, justifyLeft);
 	#undef gcw
@@ -202,6 +227,9 @@ void gwinCheckboxDraw_CheckOnRight(GWidgetObject *gw, void *param) {
 	df = ld < 4 ? 1 : 2;
 	if (gw->g.flags & GCHECKBOX_FLG_CHECKED)
 		gdispGFillArea(gw->g.display, gw->g.x+ep+df, gw->g.y+df, ld-2*df, ld-2*df, pcol->fill);
+
+	// Render highlighted border if focused
+	_gwidgetDrawFocusRect(gw, ep+1, 1, ld-2, ld-2);
 
 	// Draw the text
 	gdispGFillStringBox(gw->g.display, gw->g.x, gw->g.y, ep-1, gw->g.height, gw->text, gw->g.font, pcol->text, gw->pstyle->background, justifyRight);

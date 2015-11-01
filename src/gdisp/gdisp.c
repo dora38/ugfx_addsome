@@ -12,24 +12,23 @@
 /* Include the low level driver information */
 #include "gdisp_driver.h"
 
-#if 1
-	#undef INLINE
-	#if defined(__KEIL__) || defined(__C51__)
-		#define INLINE	__inline
-	#else
-		#define INLINE	inline
-	#endif
-#else
-	#undef INLINE
-	#define INLINE
-#endif
-
 // Number of milliseconds for the startup logo - 0 means disabled.
 #if GDISP_NEED_STARTUP_LOGO
 	#define GDISP_STARTUP_LOGO_TIMEOUT		1000
 	#define GDISP_STARTUP_LOGO_COLOR		White
 #else
 	#define GDISP_STARTUP_LOGO_TIMEOUT		0
+#endif
+
+// For internal use only.
+#if GDISP_NEED_TEXT_WORDWRAP
+	typedef struct wrapParameters {
+		GDisplay* g;
+		coord_t x;
+		coord_t y;
+		font_t font;
+		justify_t justify;
+	} wrapParameters_t;
 #endif
 
 /*===========================================================================*/
@@ -81,7 +80,7 @@ GDisplay	*GDISP;
 /*==========================================================================*/
 
 #if GDISP_HARDWARE_STREAM_POS && GDISP_HARDWARE_STREAM_WRITE
-	static INLINE void setglobalwindow(GDisplay *g) {
+	static GFXINLINE void setglobalwindow(GDisplay *g) {
 		coord_t	x, y;
 		x = g->p.x; y = g->p.y;
 		g->p.x = g->p.y = 0;
@@ -117,7 +116,7 @@ GDisplay	*GDISP;
 // Parameters:	x,y
 // Alters:		cx, cy (if using streaming)
 // Does not clip
-static INLINE void drawpixel(GDisplay *g) {
+static GFXINLINE void drawpixel(GDisplay *g) {
 
 	// Best is hardware accelerated pixel draw
 	#if GDISP_HARDWARE_DRAWPIXEL
@@ -164,7 +163,7 @@ static INLINE void drawpixel(GDisplay *g) {
 // Parameters:	x,y
 // Alters:		cx, cy (if using streaming)
 #if NEED_CLIPPING
-	static INLINE void drawpixel_clip(GDisplay *g) {
+	static GFXINLINE void drawpixel_clip(GDisplay *g) {
 		#if GDISP_HARDWARE_CLIP == HARDWARE_AUTODETECT
 			if (!gvmt(g)->setclip)
 		#endif
@@ -183,7 +182,7 @@ static INLINE void drawpixel(GDisplay *g) {
 // Alters:		nothing
 // Note:		This is not clipped
 // Resets the streaming area if GDISP_HARDWARE_STREAM_WRITE and GDISP_HARDWARE_STREAM_POS is set.
-static INLINE void fillarea(GDisplay *g) {
+static GFXINLINE void fillarea(GDisplay *g) {
 
 	// Best is hardware accelerated area fill
 	#if GDISP_HARDWARE_FILLS
@@ -3168,6 +3167,19 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 		#undef GD
 	}
 
+	/* Callback to render string boxes with word wrap. */
+	#if GDISP_NEED_TEXT_WORDWRAP
+		static bool mf_line_callback(mf_str line, uint16_t count, void *state) {
+			wrapParameters_t* wrapParameters = (wrapParameters_t*)state;
+
+			mf_render_aligned(wrapParameters->font, wrapParameters->x, wrapParameters->y, wrapParameters->justify, line, count, fillcharglyph, wrapParameters->g);
+
+			wrapParameters->y += wrapParameters->font->baseline_y;
+
+			return TRUE;
+		}	
+	#endif
+
 	void gdispGDrawChar(GDisplay *g, coord_t x, coord_t y, uint16_t c, font_t font, color_t color) {
 		MUTEX_ENTER(g);
 		g->t.font = font;
@@ -3259,7 +3271,19 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 		}
 		y += (cy+1 - font->height)/2;
 
-		mf_render_aligned(font, x, y, justify, str, 0, drawcharglyph, g);
+		/* Render */
+		#if GDISP_NEED_TEXT_WORDWRAP
+			wrapParameters_t wrapParameters;
+			wrapParameters.x = x;
+			wrapParameters.y = y;
+			wrapParameters.font = font;
+			wrapParameters.justify = justify;
+			wrapParameters.g = g;
+
+			mf_wordwrap(font, cx, str, mf_line_callback, &wrapParameters);
+		#else
+			mf_render_aligned(font, x, y, justify, str, 0, fillcharglyph, g);
+		#endif
 
 		autoflush(g);
 		MUTEX_EXIT(g);
@@ -3297,7 +3321,18 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 			y += (cy+1 - font->height)/2;
 
 			/* Render */
-			mf_render_aligned(font, x, y, justify, str, 0, fillcharglyph, g);
+			#if GDISP_NEED_TEXT_WORDWRAP
+				wrapParameters_t wrapParameters;
+				wrapParameters.x = x;
+				wrapParameters.y = y;
+				wrapParameters.font = font;
+				wrapParameters.justify = justify;
+				wrapParameters.g = g;
+
+				mf_wordwrap(font, cx, str, mf_line_callback, &wrapParameters);
+			#else
+				mf_render_aligned(font, x, y, justify, str, 0, fillcharglyph, g);
+			#endif
 		}
 
 		autoflush(g);
@@ -3313,6 +3348,8 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 		case fontCharPadding:		return 0;
 		case fontMinWidth:			return font->min_x_advance;
 		case fontMaxWidth:			return font->max_x_advance;
+		case fontBaselineX:			return font->baseline_x;
+		case fontBaselineY:			return font->baseline_y;
 		}
 		return 0;
 	}
@@ -3322,12 +3359,20 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 		return mf_character_width(font, c);
 	}
 
-	coord_t gdispGetStringWidth(const char* str, font_t font) {
+	coord_t gdispGetStringWidthCount(const char* str, font_t font, uint16_t count) {
 		if (!str)
 			return 0;
 
-		/* No mutex required as we only read static data */
-		return mf_get_string_width(font, str, 0, 0);
+		// No mutex required as we only read static data
+		#if GDISP_NEED_TEXT_KERNING
+			return mf_get_string_width(font, str, count, TRUE);
+		#else
+			return mf_get_string_width(font, str, count, FALSE);
+		#endif
+	}
+
+	coord_t gdispGetStringWidth(const char* str, font_t font) {
+		return gdispGetStringWidthCount(str, font, 0);
 	}
 #endif
 

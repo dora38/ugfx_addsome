@@ -3,13 +3,25 @@
 *****************************************************************************
 
 *** Changes after 2.3 ***
-FIX:        Add missing stm32m3 cpu makefile option. Update doc to match.
+FIX:		Add missing stm32m3 cpu makefile option. Update doc to match.
 FEATURE:	Added ability to compile ugfx as a single file. Simply compile src/gfx_mk.c
 FEATURE:	Added GFXSINGLEMAKE=yes|no to the ugfx makefile to compile ugfx as a single file.
 FEATURE:	New board STM32F746G-Discovery
 FEATURE:	New gdisp driver STM32LTDC
 FEATURE:	Better support for Raw32 platforms
 FEATURE:	Renaming GFX_NO_OS_INIT to GFX_OS_NO_INIT
+FEATURE:	New demo applications/combo
+FEATURE:	Adding more font metrics (BaselineX and BaselineY)
+FEATURE:	Adding gdispGetStringWidthCount()
+FEATURE:	Implementing widget focusing. See gwinSetFocus() and gwinGetFocus()
+FEATURE:	Adding TextEdit widget
+FEATURE:	Added color to widget style for focused widgets
+FEATURE:	Added GWIN_FOCUS_HIGHLIGHT_WIDTH as an option in the configuration file
+FEATURE:	Added support for CMSIS RTOS
+FEATURE:	Added support for KEIL RTX
+FEATURE:	Replace all references to inline with a reference to GFXINLINE
+FEATURE:	Added config option GFX_NO_INLINE to run off inlining of ugfx functions.
+FEATURE:	Added word-wrapping support for gdispDrawStringBox() and gdispFillStringBox()
 
 
 *** Release 2.3 ***

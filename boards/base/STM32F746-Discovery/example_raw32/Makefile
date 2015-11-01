@@ -15,38 +15,38 @@
 	# See $(GFXLIB)/tools/gmake_scripts/library_ugfx.mk for the list of variables
 	GFXLIB					= ../ugfx
 	GFXBOARD				= STM32F746-Discovery
-	GFXDEMO					= modules/gdisp/basics
+	GFXDEMO					= applications/combo
 	#GFXDRIVERS				=
+	GFXSINGLEMAKE			= no
 
 # ChibiOS settings
-# Note: not supported by ChibiOS yet!
 ifeq ($(OPT_OS),chibios)
-	# See $(GFXLIB)/tools/gmake_scripts/os_chibios.mk for the list of variables
-	CHIBIOS				= ../ChibiOS
-	CHIBIOS_BOARD		= ST_STM32F746_DISCOVERY
-	CHIBIOS_PLATFORM	= STM32F7xx
-	CHIBIOS_PORT		= GCC/ARMCMx/STM32F7xx
-	CHIBIOS_LDSCRIPT	= STM32F746.ld
-
-	#CHIBIOS			= ../ChibiOS3
-	#CHIBIOS_VERSION	= 3
-	#CHIBIOS_BOARD		= ST_STM32F746_DISCOVERY
-	#CHIBIOS_CPUCLASS   = ARMCMx
-	#CHIBIOS_PLATFORM	= STM32/STM32F7xx
-	#CHIBIOS_PORT		= stm32f7xx
-	#CHIBIOS_LDSCRIPT	= STM32F746.ld
+	# See $(GFXLIB)/tools/gmake_scripts/os_chibios_3.mk for the list of variables
+	CHIBIOS					= ../ChibiOS-Master
+	CHIBIOS_VERSION			= 3
+	CHIBIOS_CPUCLASS		= ARMCMx
+	CHIBIOS_PLATFORM		= STM32
+	CHIBIOS_DEVICE_FAMILY	= STM32F7xx
+	CHIBIOS_STARTUP			= startup_stm32f7xx
+	CHIBIOS_PORT			= v7m
+	CHIBIOS_LDSCRIPT		= STM32F746xG.ld
+	CHIBIOS_BOARD			= ST_STM32F746G_DISCOVERY
+	#CHIBIOS_PROCESS_STACKSIZE = 0x400
+	#CHIBIOS_EXCEPTIONS_STACKSIZE = 0x400
 endif
 
-# Raw32 settings
+#Special - Required for the drivers for this discovery board.
+STMHAL		= ../STM32/STM32F7xx_HAL_Driver
+
+#Special - Required for Raw32
 CMSIS			= ../STM32/CMSIS
-HAL				= ../STM32/STM32F7xx_HAL_Driver
 
 ##############################################################################################
 # Set these for your project
 #
 
 ARCH     = arm-none-eabi-
-SRCFLAGS = -ggdb -O0
+SRCFLAGS = -ggdb -O1
 CFLAGS   = 
 CXXFLAGS = -fno-rtti
 ASFLAGS  =
@@ -55,7 +55,8 @@ LDFLAGS  =
 SRC      = 
 
 OBJS     =
-DEFS     =	GFX_OS_HEAP_SIZE=40960
+DEFS     = GFX_OS_HEAP_SIZE=40960
+#DEFS     = 
 LIBS     =
 INCPATH  = 
 

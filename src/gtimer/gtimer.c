@@ -29,13 +29,13 @@ static DECLARE_THREAD_STACK(waTimerThread, GTIMER_THREAD_WORKAREA_SIZE);
 /*===========================================================================*/
 
 static DECLARE_THREAD_FUNCTION(GTimerThreadHandler, arg) {
-	(void)arg;
 	GTimer			*pt;
 	systemticks_t	tm;
 	systemticks_t	nxtTimeout;
 	systemticks_t	lastTime;
 	GTimerFunction	fn;
 	void			*param;
+	(void)			arg;
 
 	nxtTimeout = TIME_INFINITE;
 	lastTime = 0;
@@ -108,7 +108,7 @@ static DECLARE_THREAD_FUNCTION(GTimerThreadHandler, arg) {
 		lastTime = tm;
 		gfxMutexExit(&mutex);
 	}
-	return 0;
+	THREAD_RETURN(0);
 }
 
 void _gtimerInit(void)
@@ -139,7 +139,7 @@ void gtimerStart(GTimer *pt, GTimerFunction fn, void *param, bool_t periodic, de
 	
 	// Start our thread if not already going
 	if (!hThread) {
-		hThread = gfxThreadCreate(waTimerThread, sizeof(waTimerThread), GTIMER_THREAD_PRIORITY, GTimerThreadHandler, 0);
+		hThread = gfxThreadCreate(waTimerThread, GTIMER_THREAD_WORKAREA_SIZE, GTIMER_THREAD_PRIORITY, GTimerThreadHandler, 0);
 		if (hThread) {gfxThreadClose(hThread);}		// We never really need the handle again
 	}
 

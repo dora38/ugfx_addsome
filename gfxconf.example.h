@@ -34,11 +34,15 @@
 //#define GFX_USE_OS_OSX                               FALSE
 //#define GFX_USE_OS_ECOS                              FALSE
 //#define GFX_USE_OS_RAWRTOS                           FALSE
+//#define GFX_USE_OS_ARDUINO                           FALSE
+//#define GFX_USE_OS_KEIL                              FALSE
+//#define GFX_USE_OS_CMSIS                             FALSE
 //#define GFX_USE_OS_RAW32                             FALSE
 //    #define INTERRUPTS_OFF()                         optional_code
 //    #define INTERRUPTS_ON()                          optional_code
 
 // Options that (should where relevant) apply to all operating systems
+//    #define GFX_NO_INLINE                            FALSE
 //    #define GFX_COMPILER                             GFX_COMPILER_UNKNOWN
 //    #define GFX_CPU                                  GFX_CPU_UNKNOWN
 //    #define GFX_OS_HEAP_SIZE                         0
@@ -69,6 +73,7 @@
 //#define GDISP_NEED_MULTITHREAD                       FALSE
 //#define GDISP_NEED_STREAMING                         FALSE
 //#define GDISP_NEED_TEXT                              FALSE
+//    #define GDISP_NEED_TEXT_WORDWRAP                 FALSE
 //    #define GDISP_NEED_ANTIALIAS                     FALSE
 //    #define GDISP_NEED_UTF8                          FALSE
 //    #define GDISP_NEED_TEXT_KERNING                  FALSE
@@ -167,6 +172,7 @@
 //#define GWIN_NEED_GL3D                               FALSE
 
 //#define GWIN_NEED_WIDGET                             FALSE
+//#define GWIN_FOCUS_HIGHLIGHT_WIDTH                   1
 //    #define GWIN_NEED_LABEL                          FALSE
 //        #define GWIN_LABEL_ATTRIBUTE                 FALSE
 //    #define GWIN_NEED_BUTTON                         FALSE
@@ -186,6 +192,7 @@
 //    #define GWIN_NEED_KEYBOARD                       FALSE
 //        #define GWIN_KEYBOARD_DEFAULT_LAYOUT         VirtualKeyboard_English1
 //        #define GWIN_NEED_KEYBOARD_ENGLISH1          TRUE
+//    #define GWIN_NEED_TEXTEDIT                       FALSE
 //    #define GWIN_FLAT_STYLING                        FALSE
 //    #define GWIN_WIDGET_TAGS                         FALSE
 

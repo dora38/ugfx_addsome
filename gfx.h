@@ -55,6 +55,20 @@
 #include "gfxconf.h"
 
 /**
+ * @brief   Should various inline ugfx functions be non-inline.
+ * @details	Defaults to FALSE
+ */
+#if GFX_NO_INLINE
+	#define GFXINLINE
+#else
+	#if defined(__KEIL__) || defined(__C51__)
+		#define GFXINLINE	__inline
+	#else
+		#define GFXINLINE	inline
+	#endif
+#endif
+
+/**
  * @name    GFX sub-systems that can be turned on
  * @{
  */
