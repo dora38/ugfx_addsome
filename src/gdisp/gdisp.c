@@ -5,7 +5,7 @@
  *              http://ugfx.org/license.html
  */
 
-#include "gfx.h"
+#include "../../gfx.h"
 
 #if GFX_USE_GDISP
 
@@ -1725,8 +1725,8 @@ void gdispGBlitArea(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, c
 			sedge = round(radius * ((sbit & 0x99) ? fsin(start) : fcos(start)));
 			eedge = round(radius * ((ebit & 0x99) ? fsin(end) : fcos(end)));
 		#else
-			sedge = round(radius * ((sbit & 0x99) ? sin(start*M_PI/180) : cos(start*M_PI/180)));
-			eedge = round(radius * ((ebit & 0x99) ? sin(end*M_PI/180) : cos(end*M_PI/180)));
+			sedge = round(radius * ((sbit & 0x99) ? sin(start*GFX_PI/180) : cos(start*GFX_PI/180)));
+			eedge = round(radius * ((ebit & 0x99) ? sin(end*GFX_PI/180) : cos(end*GFX_PI/180)));
 		#endif
 		if (sbit & 0xB4) sedge = -sedge;
 		if (ebit & 0xB4) eedge = -eedge;
@@ -1852,8 +1852,8 @@ void gdispGBlitArea(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, c
 			sxb = FP2FIXED(radius*fcos(start));	sy = -round(radius*fsin(start));
 			exb = FP2FIXED(radius*fcos(end));	ey = -round(radius*fsin(end));
 		#else
-			sxb = FP2FIXED(radius*cos(start*M_PI/180));	sy = -round(radius*sin(start*M_PI/180));
-			exb = FP2FIXED(radius*cos(end*M_PI/180));	ey = -round(radius*sin(end*M_PI/180));
+			sxb = FP2FIXED(radius*cos(start*GFX_PI/180));	sy = -round(radius*sin(start*GFX_PI/180));
+			exb = FP2FIXED(radius*cos(end*GFX_PI/180));	ey = -round(radius*sin(end*GFX_PI/180));
 		#endif
 		sxd = sy ? sxb/sy : sxb;
 		exd = ey ? exb/ey : exb;
@@ -3169,7 +3169,21 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 
 	/* Callback to render string boxes with word wrap. */
 	#if GDISP_NEED_TEXT_WORDWRAP
-		static bool mf_line_callback(mf_str line, uint16_t count, void *state) {
+		static bool mf_countline_callback(mf_str line, uint16_t count, void *state) {
+			int *linecount = (int*)state;
+			(*linecount)++;
+
+			return TRUE;
+		}
+		static bool mf_drawline_callback(mf_str line, uint16_t count, void *state) {
+			wrapParameters_t* wrapParameters = (wrapParameters_t*)state;
+
+			mf_render_aligned(wrapParameters->font, wrapParameters->x, wrapParameters->y, wrapParameters->justify, line, count, drawcharglyph, wrapParameters->g);
+
+			wrapParameters->y += wrapParameters->font->line_height;
+			return TRUE;
+		}
+		static bool mf_fillline_callback(mf_str line, uint16_t count, void *state) {
 			wrapParameters_t* wrapParameters = (wrapParameters_t*)state;
 
 			mf_render_aligned(wrapParameters->font, wrapParameters->x, wrapParameters->y, wrapParameters->justify, line, count, fillcharglyph, wrapParameters->g);
@@ -3250,6 +3264,7 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	void gdispGDrawStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, justify_t justify) {
 		#if GDISP_NEED_TEXT_WORDWRAP
 			wrapParameters_t wrapParameters;
+			uint16_t nbrLines;
 		#endif
 
 		MUTEX_ENTER(g);
@@ -3273,7 +3288,6 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 			x += font->baseline_x;
 			break;
 		}
-		y += (cy+1 - font->height)/2;
 
 		/* Render */
 		#if GDISP_NEED_TEXT_WORDWRAP
@@ -3283,8 +3297,14 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 			wrapParameters.justify = justify;
 			wrapParameters.g = g;
 
-			mf_wordwrap(font, cx, str, mf_line_callback, &wrapParameters);
+			// Count the number of lines
+			nbrLines = 0;
+			mf_wordwrap(font, cx, str, mf_countline_callback, &nbrLines);
+			wrapParameters.y += (cy+1 - nbrLines*font->height)/2;
+			
+			mf_wordwrap(font, cx, str, mf_fillline_callback, &wrapParameters);
 		#else
+			y += (cy+1 - font->height)/2;
 			mf_render_aligned(font, x, y, justify, str, 0, drawcharglyph, g);
 		#endif
 
@@ -3295,6 +3315,7 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	void gdispGFillStringBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, const char* str, font_t font, color_t color, color_t bgcolor, justify_t justify) {
 		#if GDISP_NEED_TEXT_WORDWRAP
 			wrapParameters_t wrapParameters;
+			uint16_t nbrLines;
 		#endif
 
 		MUTEX_ENTER(g);
@@ -3326,7 +3347,6 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 				x += font->baseline_x;
 				break;
 			}
-			y += (cy+1 - font->height)/2;
 
 			/* Render */
 			#if GDISP_NEED_TEXT_WORDWRAP
@@ -3336,8 +3356,15 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 				wrapParameters.justify = justify;
 				wrapParameters.g = g;
 
-				mf_wordwrap(font, cx, str, mf_line_callback, &wrapParameters);
+
+				// Count the number of lines
+				nbrLines = 0;
+				mf_wordwrap(font, cx, str, mf_countline_callback, &nbrLines);
+				wrapParameters.y += (cy+1 - nbrLines*font->height)/2;
+
+				mf_wordwrap(font, cx, str, mf_fillline_callback, &wrapParameters);
 			#else
+				y += (cy+1 - font->height)/2;
 				mf_render_aligned(font, x, y, justify, str, 0, fillcharglyph, g);
 			#endif
 		}

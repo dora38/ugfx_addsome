@@ -5,9 +5,11 @@
  *              http://ugfx.org/license.html
  */
 
-#include "gfx.h"
+#include "../../gfx.h"
 
 #if GFX_USE_GDISP && GDISP_NEED_IMAGE
+
+#include "gdisp_image_support.h"
 
 #if GDISP_NEED_IMAGE_NATIVE
 	extern gdispImageError gdispImageOpen_NATIVE(gdispImage *img);
@@ -89,39 +91,6 @@ static gdispImageHandlers ImageHandlers[] = {
 		},
 	#endif
 };
-
-gdispImageError
-		DEPRECATED("Use gdispImageOpenGFile() instead")
-		gdispImageOpen(gdispImage *img) {
-	return gdispImageOpenGFile(img, img->f);
-}
-
-#if GFILE_NEED_MEMFS
-	bool_t
-			DEPRECATED("Use gdispImageOpenMemory() instead")
-			gdispImageSetMemoryReader(gdispImage *img, const void *memimage) {
-		img->f = gfileOpenMemory((void *)memimage, "rb");
-		return img->f != 0;
-	}
-#endif
-
-#if defined(WIN32) || GFX_USE_OS_WIN32 || GFX_USE_OS_LINUX || GFX_USE_OS_OSX
-	bool_t
-			DEPRECATED("Use gdispImageOpenFile() instead")
-			gdispImageSetFileReader(gdispImage *img, const char *filename) {
-		img->f = gfileOpen(filename, "rb");
-		return img->f != 0;
-	}
-#endif
-
-#if GFILE_NEED_CHIBIOSFS && GFX_USE_OS_CHIBIOS
-	bool_t
-			DEPRECATED("Use gdispImageOpenBaseFileStream() instead")
-			gdispImageSetBaseFileStreamReader(gdispImage *img, void *BaseFileStreamPtr) {
-		img->f = gfileOpenBaseFileStream(BaseFileStreamPtr, "rb");
-		return img->f != 0;
-	}
-#endif
 
 void gdispImageInit(gdispImage *img) {
 	img->type = GDISP_IMAGE_TYPE_UNKNOWN;
@@ -221,5 +190,50 @@ void gdispImageFree(gdispImage *img, void *ptr, size_t sz) {
 		gfxFree(ptr);
 	#endif
 }
+
+#if GFX_CPU_ENDIAN != GFX_CPU_ENDIAN_LITTLE && GFX_CPU_ENDIAN != GFX_CPU_ENDIAN_BIG \
+		&& GFX_CPU_ENDIAN != GFX_CPU_ENDIAN_WBDWL && GFX_CPU_ENDIAN != GFX_CPU_ENDIAN_WLDWB
+
+	union wbyteorder_u {
+		uint8_t		b[2];
+		uint32_t	w;
+	};
+	union dwbyteorder_u {
+		uint8_t		b[4];
+		uint32_t	l;
+	};
+
+	uint16_t gdispImageH16toLE16(uint16_t w) {
+		union wbyteorder_u	we;
+
+		we.w = w;
+		return	 (((uint16_t)we.b[0]))|(((uint16_t)we.b[1]) << 8);
+	}
+	uint16_t gdispImageH16toBE16(uint16_t w) {
+		union wbyteorder_u	we;
+
+		we.w = w;
+		return	 (((uint16_t)we.b[0]) << 8)|(((uint16_t)we.b[1]));
+	}
+
+	uint32_t gdispImageH32toLE32(uint32_t dw) {
+		union dwbyteorder_u	we;
+
+		we.l = dw;
+		return	 (((uint32_t)we.b[0]))
+				|(((uint32_t)we.b[1]) << 8)
+				|(((uint32_t)we.b[2]) << 16)
+				|(((uint32_t)we.b[3]) << 24);
+	}
+	uint32_t gdispImageH32toBE32(uint32_t dw) {
+		union dwbyteorder_u	we;
+
+		we.l = dw;
+		return	 (((uint32_t)we.b[0]) << 24)
+				|(((uint32_t)we.b[1]) << 16)
+				|(((uint32_t)we.b[2]) << 8)
+				|(((uint32_t)we.b[3]));
+	}
+#endif
 
 #endif /* GFX_USE_GDISP && GDISP_NEED_IMAGE */

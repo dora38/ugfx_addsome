@@ -10,7 +10,7 @@
  * @brief   GWIN sub-system virtual keyboard code
  */
 
-#include "gfx.h"
+#include "../../gfx.h"
 
 #if GFX_USE_GWIN && GWIN_NEED_KEYBOARD
 
@@ -300,8 +300,7 @@ static void SendKeyboardEvent(GKeyboardObject *gk) {
 	}
 #endif
 
-extern GVKeyTable GWIN_KEYBOARD_DEFAULT_LAYOUT;
-void gwinKeyboardDraw_Normal(GWidgetObject *gw, void *param);
+extern const GVKeyTable GWIN_KEYBOARD_DEFAULT_LAYOUT;
 
 // The button VMT table
 static const gwidgetVMT keyboardVMT = {
@@ -365,7 +364,7 @@ GSourceHandle gwinKeyboardGetEventSource(GHandle gh) {
 	return (GSourceHandle)gh;
 }
 
-void gwinKeyboardSetLayout(GHandle gh, struct GVKeyTable *layout) {
+void gwinKeyboardSetLayout(GHandle gh, const struct GVKeyTable *layout) {
 	#define gk		((GKeyboardObject *)gh)
 
 	if (gh->vmt != (gwinVMT *)&keyboardVMT)

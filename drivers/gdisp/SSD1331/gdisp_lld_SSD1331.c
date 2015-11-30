@@ -20,7 +20,7 @@
 
 #define GDISP_DRIVER_VMT			GDISPVMT_SSD1331
 #include "gdisp_lld_config.h"
-#include "src/gdisp/gdisp_driver.h"
+#include "../../../src/gdisp/gdisp_driver.h"
 
 #include "board_SSD1331.h"
 
@@ -110,11 +110,11 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 
 	write_cmd(g, SSD1331_DISPLAY_ON);
 
- 	// Release the bus
-	release_bus(g);
-
     // Finish Init
     post_init_board(g);
+
+ 	// Release the bus
+	release_bus(g);
 
 	/* Initialise the GDISP structure */
 	g->g.Width = GDISP_SCREEN_WIDTH;

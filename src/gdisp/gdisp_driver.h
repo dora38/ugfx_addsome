@@ -19,7 +19,7 @@
 #if GFX_USE_GDISP
 
 // Include the GDRIVER infrastructure
-#include "src/gdriver/gdriver.h"
+#include "../gdriver/gdriver.h"
 
 // Are we currently compiling the driver itself?
 #if defined(GDISP_DRIVER_VMT)
@@ -408,7 +408,7 @@ typedef struct GDISPVMT {
 	extern "C" {
 	#endif
 
-	// Should the driver routines should be static or not
+	// Should the driver routines be static or not
 	#if USE_VMT
 		#define LLDSPEC         static
 	#else

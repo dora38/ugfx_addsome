@@ -12,8 +12,7 @@
  * @defgroup Label Label
  * @ingroup Widgets
  *
- * @details		GWIN allos it to create an label widget. The widget
- *				takes no user input.
+ * @brief		Simple label widget.
  *
  * @details		Setting the dimensions of the widget to 0 will automatically
  *				set the labels dimensions to fit the entire text. Note that the
@@ -66,7 +65,7 @@ GHandle gwinGLabelCreate(GDisplay *g, GLabelObject *widget, GWidgetInit *pInit);
 /**
  * @brief				Border settings for the default rendering routine
  *
- * @param[in] gh		The widget handle (must be a list handle)
+ * @param[in] gh		The widget handle (must be a label handle)
  * @param[in] border	Shall a border be rendered?
  *
  * @api
@@ -99,6 +98,56 @@ void gwinLabelSetBorder(GHandle gh, bool_t border);
 	 */
 	void gwinLabelSetAttribute(GHandle gh, coord_t tab, const char* attr);
 #endif
+
+/**
+ * @defgroup Renderings_Label Renderings
+ *
+ * @brief				Built-in rendering functions for the label widget.
+ *
+ * @details				These function may be passed to @p gwinSetCustomDraw() to get different label drawing styles.
+ *
+ * @note				In your custom label drawing function you may optionally call these
+ * 						standard functions and then draw your extra details on top.
+ * @note				The built-in functions below ignore the param parameter.
+ * @note				These custom drawing routines don't have to worry about setting clipping as the framework
+ * 						sets clipping to the object window prior to calling these routines.
+ *
+ * @{
+ */
+
+/**
+ * @brief				Renders a label with the text left jestified.
+ *
+ * @note				This is the default rendering function.
+ *
+ * @param[in] gw		The widget object (must be a label object)
+ * @param[in] param		A parameter passed in from the user. Ignored by this function.
+ *
+ * @api
+ */
+void gwinLabelDrawJustifiedLeft(GWidgetObject *gw, void *param);
+
+/**
+ * @brief				Renders a label with the text right jestified.
+ *
+ * @param[in] gw		The widget object (must be a label object)
+ * @param[in] param		A parameter passed in from the user. Ignored by this function.
+ *
+ * @api
+ */
+void gwinLabelDrawJustifiedRight(GWidgetObject *gw, void *param);
+
+/**
+ * @brief				Renders a label with the text center jestified.
+ *
+ * @param[in] gw		The widget object (must be a label object)
+ * @param[in] param		A parameter passed in from the user. Ignored by this function.
+ *
+ * @api
+ */
+void gwinLabelDrawJustifiedCenter(GWidgetObject *gw, void *param);
+
+/** @} */
 
 #ifdef __cplusplus
 }

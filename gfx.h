@@ -38,35 +38,11 @@
 	#define TRUE        -1
 #endif
 
-/**
- * @brief   Mark a function as deprecated.
- */
-#ifndef DEPRECATED
-	#if defined(__GNUC__) || defined(__MINGW32_) || defined(__CYGWIN__)
-		#define DEPRECATED(msg)		__attribute__((deprecated(msg)))
-	#elif defined(_MSC_VER)
-		#define DEPRECATED(msg)		__declspec(deprecated(msg))
-	#else
-		#define DEPRECATED(msg)
-	#endif
-#endif
-
 /* gfxconf.h is the user's project configuration for the GFX system. */
 #include "gfxconf.h"
 
-/**
- * @brief   Should various inline ugfx functions be non-inline.
- * @details	Defaults to FALSE
- */
-#if GFX_NO_INLINE
-	#define GFXINLINE
-#else
-	#if defined(__KEIL__) || defined(__C51__)
-		#define GFXINLINE	__inline
-	#else
-		#define GFXINLINE	inline
-	#endif
-#endif
+/* Include Compiler and CPU support */
+#include "src/gfx_compilers.h"
 
 /**
  * @name    GFX sub-systems that can be turned on

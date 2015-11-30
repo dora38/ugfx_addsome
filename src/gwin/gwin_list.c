@@ -10,7 +10,7 @@
  * @brief	GWIN list widget header file
  */
 
-#include "gfx.h"
+#include "../../gfx.h"
 
 #if GFX_USE_GWIN && GWIN_NEED_LIST
 
@@ -73,8 +73,6 @@ static void sendListEvent(GWidgetObject *gw, int item) {
 		geventSendEvent(psl);
 	}
 }
-
-static void gwinListDefaultDraw(GWidgetObject* gw, void* param);
 
 #if GINPUT_NEED_MOUSE
     static void ListMouseSelect(GWidgetObject* gw, coord_t x, coord_t y) {
@@ -657,14 +655,7 @@ void gwinListViewItem(GHandle gh, int item) {
 	}
 #endif
 
-static void gwinListDefaultDraw(GWidgetObject* gw, void* param) {
-	(void)param;
-
-	#if GDISP_NEED_CONVEX_POLYGON
-		static const point upArrow[] = { {0, LST_ARROW_SZ}, {LST_ARROW_SZ, LST_ARROW_SZ}, {LST_ARROW_SZ/2, 0} };
-		static const point downArrow[] = { {0, 0}, {LST_ARROW_SZ, 0}, {LST_ARROW_SZ/2, LST_ARROW_SZ} };
-	#endif
-
+void gwinListDefaultDraw(GWidgetObject* gw, void* param) {
 	const gfxQueueASyncItem*	qi;
 	int							i;
 	coord_t						x, y, iheight, iwidth;
@@ -673,6 +664,12 @@ static void gwinListDefaultDraw(GWidgetObject* gw, void* param) {
 	#if GWIN_NEED_LIST_IMAGES
 		coord_t					sy;
 	#endif
+	#if GDISP_NEED_CONVEX_POLYGON
+		static const point upArrow[] = { {0, LST_ARROW_SZ}, {LST_ARROW_SZ, LST_ARROW_SZ}, {LST_ARROW_SZ/2, 0} };
+		static const point downArrow[] = { {0, 0}, {LST_ARROW_SZ, 0}, {LST_ARROW_SZ/2, LST_ARROW_SZ} };
+	#endif
+
+	(void)param;
 
 	// is it a valid handle?
 	if (gw->g.vmt != (gwinVMT *)&listVMT)
@@ -727,7 +724,9 @@ static void gwinListDefaultDraw(GWidgetObject* gw, void* param) {
 	gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, ps->edge);
 
 	// Set the clipping region so we do not override the frame.
-	gdispGSetClip(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2);
+	#if GDISP_NEED_CLIP
+		gdispGSetClip(gw->g.display, gw->g.x+1, gw->g.y+1, gw->g.width-2, gw->g.height-2);
+	#endif
 
 	// Draw until we run out of room or items
 	for (y = 1-(gw2obj->top%iheight); y < gw->g.height-2 && qi; qi = gfxQueueASyncNext(qi), y += iheight) {

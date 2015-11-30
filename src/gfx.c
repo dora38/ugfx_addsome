@@ -13,13 +13,16 @@
 /* Display various warnings from gfx_rules.h */
 #define GFX_DISPLAY_RULE_WARNINGS	TRUE
 
-#include "gfx.h"
+#include "../gfx.h"
 
 static bool_t gfxInitDone = FALSE;
 
 /* These init functions are defined by each module but not published */
 extern void _gosInit(void);
 extern void _gosDeinit(void);
+#ifdef GFX_OS_PRE_INIT_FUNCTION
+		extern void GFX_OS_PRE_INIT_FUNCTION(void);
+#endif
 #ifdef GFX_OS_EXTRA_INIT_FUNCTION
 		extern void GFX_OS_EXTRA_INIT_FUNCTION(void);
 #endif
@@ -80,6 +83,9 @@ void gfxInit(void)
 
 	// These must be initialised in the order of their dependancies
 
+	#ifdef GFX_OS_PRE_INIT_FUNCTION
+		GFX_OS_PRE_INIT_FUNCTION();
+	#endif
 	_gosInit();
 	#ifdef GFX_OS_EXTRA_INIT_FUNCTION
 		GFX_OS_EXTRA_INIT_FUNCTION();

@@ -5,9 +5,11 @@
  *              http://ugfx.org/license.html
  */
 
-#include "gfx.h"
+#include "../../gfx.h"
 
 #if GFX_USE_GDISP && GDISP_NEED_IMAGE && GDISP_NEED_IMAGE_PNG
+
+#include "gdisp_image_support.h"
 
 #error "PNG support not implemented yet"
 
