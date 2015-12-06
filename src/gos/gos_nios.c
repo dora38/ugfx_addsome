@@ -47,13 +47,10 @@ void gfxExit(void) {
 		dummy++;
 	}
 }
-#include <stdio.h>
+
 systemticks_t gfxSystemTicks(void)
 {
-	volatile alt_u32 ticks = alt_nticks();
-
-	printf("Ticks: %d\r\n", ticks);
-	return ticks;
+	return alt_nticks();
 }
 
 systemticks_t gfxMillisecondsToTicks(delaytime_t ms)
