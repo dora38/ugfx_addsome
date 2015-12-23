@@ -36,7 +36,7 @@ const GWidgetStyle WhiteWidgetStyle = {
 		HTML2COLOR(0x000000),		// text
 		HTML2COLOR(0x404040),		// edge
 		HTML2COLOR(0xE0E0E0),		// fill
-		HTML2COLOR(0xE0E0E0)		// progress - inactive area
+		HTML2COLOR(0x00E000)		// progress - active area
 	},
 
 	// disabled color set
@@ -66,7 +66,7 @@ const GWidgetStyle BlackWidgetStyle = {
 		HTML2COLOR(0xC0C0C0),		// text
 		HTML2COLOR(0xC0C0C0),		// edge
 		HTML2COLOR(0x606060),		// fill
-		HTML2COLOR(0x404040)		// progress - inactive area
+		HTML2COLOR(0x008000)		// progress - active area
 	},
 
 	// disabled color set
@@ -311,7 +311,7 @@ static void gwidgetEvent(void *param, GEvent *pe) {
 	}
 
 	void _gwidgetDrawFocusRect(GWidgetObject *gx, coord_t x, coord_t y, coord_t cx, coord_t cy) {
-		uint16_t i = 0;
+		uint16_t i;
 		
 		// Don't do anything if we don't have the focus
 		if (&gx->g != _widgetInFocus)
@@ -381,9 +381,9 @@ GHandle _gwidgetCreate(GDisplay *g, GWidgetObject *pgw, const GWidgetInit *pInit
 	if (!(pgw = (GWidgetObject *)_gwindowCreate(g, &pgw->g, &pInit->g, &vmt->g, GWIN_FLG_WIDGET|GWIN_FLG_ENABLED|GWIN_FLG_SYSENABLED)))
 		return 0;
 
-	#if GWIN_NEED_COLLECTIONS
+	#if GWIN_NEED_CONTAINERS
 		// This window can't be system enabled if the parent is not enabled
-		if (pgw->parent && !(pgw->parent->flags & GWIN_FLG_SYSENABLED))
+		if (pgw->g.parent && !(pgw->g.parent->flags & GWIN_FLG_SYSENABLED))
 			pgw->g.flags &= ~GWIN_FLG_SYSENABLED;
 	#endif
 	pgw->text = pInit->text ? pInit->text : "";

@@ -46,6 +46,33 @@ static bool_t resizeText(GWidgetObject* gw, size_t pos, int32_t diff) {
 	return TRUE;
 }
 
+// Function that allows to set the cursor to any position in the string
+// This should be optimized. Currently it is an O(n^2) problem and therefore very
+// slow. An optimized version would copy the behavior of mf_get_string_width()
+// and do the comparation directly inside of that loop so we only iterate
+// the string once.
+static void TextEditMouseDown(GWidgetObject* gw, coord_t x, coord_t y) {
+	uint16_t i = 0;
+
+	(void)y;
+
+	// Directly jump to the end of the string
+	if (x > gdispGetStringWidth(gw->text, gw->g.font)) {
+		gw2obj->cursorPos = strlen(gw->text);
+
+	// Otherwise iterate through each character and get the size in pixels to compare
+	} else {
+		i = 1;
+		while (gdispGetStringWidthCount(gw->text, gw->g.font, i) < x) {
+			i++;
+		}
+
+		gw2obj->cursorPos = i-1;
+	}
+
+	_gwinUpdate((GHandle)gw);
+}
+
 #if (GFX_USE_GINPUT && GINPUT_NEED_KEYBOARD) || GWIN_NEED_KEYBOARD
 	static void TextEditKeyboard(GWidgetObject* gw, GEventKeyboard* pke) {
 		// Only react on KEYDOWN events. Ignore KEYUP events.
@@ -138,7 +165,7 @@ static const gwidgetVMT texteditVMT = {
 	gwinTexteditDefaultDraw,		// default drawing routine
 	#if GINPUT_NEED_MOUSE
 		{
-			0,						// Process mouse down events (NOT USED)
+			TextEditMouseDown,		// Process mouse down events (NOT USED)
 			0,						// Process mouse up events (NOT USED)
 			0,						// Process mouse move events (NOT USED)
 		},
@@ -196,9 +223,10 @@ GHandle gwinGTexteditCreate(GDisplay* g, GTexteditObject* wt, GWidgetInit* pInit
 
 void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param)
 {
-	const char *p;
-	coord_t		cpos, tpos;
-	color_t		ccol, tcol;
+	const char*			p;
+	coord_t				cpos, tpos;
+	const GColorSet*	pcol;
+
 	(void)param;
 
 	// Is it a valid handle?
@@ -206,8 +234,10 @@ void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param)
 		return;
 
 	// Retrieve colors
-	tcol = (gw->g.flags & GWIN_FLG_SYSENABLED) ? gw->pstyle->enabled.text : gw->pstyle->disabled.text;
-	ccol = (gw->g.flags & GWIN_FLG_SYSENABLED) ? gw->pstyle->enabled.edge : gw->pstyle->disabled.edge;
+	if ((gw->g.flags & GWIN_FLG_SYSENABLED))
+		pcol = &gw->pstyle->enabled;
+	else
+		pcol = &gw->pstyle->disabled;
 
 	// Adjust the text position so the cursor fits in the window
 	p = gw->text;
@@ -223,9 +253,9 @@ void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param)
 
 	// Render background and string
 	#if TEXT_PADDING_LEFT
-		gdispGFillArea(gw->g.display, gw->g.x, gw->g.y, TEXT_PADDING_LEFT, gw->g.height, gw->pstyle->background);
+		gdispGFillArea(gw->g.display, gw->g.x, gw->g.y, TEXT_PADDING_LEFT, gw->g.height, pcol->fill);
 	#endif
-	gdispGFillStringBox(gw->g.display, gw->g.x + TEXT_PADDING_LEFT, gw->g.y, gw->g.width-TEXT_PADDING_LEFT, gw->g.height, p, gw->g.font, tcol, gw->pstyle->background, justifyLeft);
+	gdispGFillStringBox(gw->g.display, gw->g.x + TEXT_PADDING_LEFT, gw->g.y, gw->g.width-TEXT_PADDING_LEFT, gw->g.height, p, gw->g.font, pcol->text, pcol->fill, justifyLeft);
 
 	// Render cursor (if focused)
 	if (gwinGetFocus() == (GHandle)gw) {
@@ -234,14 +264,14 @@ void gwinTexteditDefaultDraw(GWidgetObject* gw, void* param)
 		// Draw cursor
 		tpos += gw->g.x + CURSOR_PADDING_LEFT + TEXT_PADDING_LEFT + gdispGetFontMetric(gw->g.font, fontBaselineX)/2;
 		cpos = (gw->g.height - gdispGetFontMetric(gw->g.font, fontHeight))/2 - CURSOR_EXTRA_HEIGHT;
-		gdispGDrawLine(gw->g.display, tpos, gw->g.y + cpos, tpos, gw->g.y + gw->g.height - cpos, ccol);
+		gdispGDrawLine(gw->g.display, tpos, gw->g.y + cpos, tpos, gw->g.y + gw->g.height - cpos, pcol->edge);
 	}
 
 	// Render border
-	gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, ccol);
+	gdispGDrawBox(gw->g.display, gw->g.x, gw->g.y, gw->g.width, gw->g.height, pcol->edge);
 
 	// Render highlighted border if focused
-	_gwidgetDrawFocusRect(gw, 1, 1, gw->g.width-2, gw->g.height-2);
+	_gwidgetDrawFocusRect(gw, 0, 0, gw->g.width, gw->g.height);
 
 }
 
