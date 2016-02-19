@@ -45,6 +45,14 @@ typedef struct GEventGWinSlider {
 
 // There are currently no GEventGWinSlider listening flags - use 0
 
+/**
+ * @brief	The internal slider object flags
+ * @note	Used only for writing a custom draw routine.
+ * @{
+ */
+#define GSLIDER_FLG_EXTENDED_EVENTS		(0x00000001<<0)
+/** @} */
+
 // A slider window
 typedef struct GSliderObject {
 	GWidgetObject		w;

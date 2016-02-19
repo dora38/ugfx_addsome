@@ -31,9 +31,21 @@
  * @brief	 Flags for gwinFrameCreate()
  * @{
  */
-#define GWIN_FRAME_BORDER			0x00000000		// Deprecated. A border is always shown with a frame window now.
-#define GWIN_FRAME_CLOSE_BTN		0x00000001
-#define GWIN_FRAME_MINMAX_BTN		0x00000002
+#define GWIN_FRAME_BORDER			0x00000000		/**< Deprecated. A border is always shown with a frame window now. */
+#define GWIN_FRAME_CLOSE_BTN		0x00000001		/**< Should a close button be shown? */
+#define GWIN_FRAME_MINMAX_BTN		0x00000002		/**< Should minimize and maximize buttons be shown? */
+#define GWIN_FRAME_KEEPONCLOSE		0x00000004		/**< Don't automatically destroy the frame on close */
+/** @} */
+
+/**
+ * @brief	The internal frame flags
+ * @note	Used only for writing a custom draw routine.
+ * @{
+ */
+#define GWIN_FRAME_CLOSE_PRESSED	0x00000008
+#define GWIN_FRAME_MIN_PRESSED		0x00000010
+#define GWIN_FRAME_MAX_PRESSED		0x00000020
+#define GWIN_FRAME_REDRAW_FRAME		0x00000040		// Only redraw the frame
 /** @} */
 
 typedef GContainerObject GFrameObject;
