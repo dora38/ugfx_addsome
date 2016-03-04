@@ -2,7 +2,10 @@
 *** Releases                                                              ***
 *****************************************************************************
 
-*** Changes after 2.4 ***
+*** Changes after 2.5 ***
+
+
+*** Release 2.5 ***
 FEATURE:	Added support for numerous compilers
 FIX:		Improving STM32LTDC driver
 FEATURE:	Added support for NIOS-II platform
@@ -11,6 +14,8 @@ FIX:		Vastly improving keyboard widget default rendering
 FEATURE:	Added ILI9342 driver
 FIX:		Fixing issues where wrong 'progress' color from widget style palette was used
 FEATURE:	Added GWIN_FRAME_KEEPONCLOSE flag to prevent destruction of a frame on close
+FEATURE:	Added support for PNG images
+FEATURE:	Added new module 'GTRANS' which allows handling application translations
 
 
 *** Release 2.4 ***
