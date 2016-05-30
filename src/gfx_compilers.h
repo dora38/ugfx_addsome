@@ -332,6 +332,7 @@
 		#define GFX_COMPILER_VERSION_PATCH			((__CC65__)%0x10)
 	#elif GFX_COMPILER == GFX_COMPILER_CLANG
 		#define GFX_COMPILER_NAME					"CLang (LLVM)"
+		#define GFX_COMPILER_TESTED					TRUE
 		#define GFX_COMPILER_VERSION_MAJOR			(__clang_major__)
 		#define GFX_COMPILER_VERSION_MINOR			(__clang_minor__)
 		#define GFX_COMPILER_VERSION_PATCH			(__clang_patchlevel__)
@@ -639,6 +640,7 @@
 		#define GFX_COMPILER_VERSION_PATCH			((SDCC)%1000)
 	#elif GFX_COMPILER == GFX_COMPILER_TINYC
 		#define GFX_COMPILER_NAME					"Tiny C"
+		#define GFX_COMPILER_TESTED					TRUE
 	#elif GFX_COMPILER == GFX_COMPILER_TURBOC
 		#define GFX_COMPILER_NAME					"Borland Turbo C/C++"
 		#if __TURBOC__ < 0x295 || __TURBOC__ >= 0x400
