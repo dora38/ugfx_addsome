@@ -365,8 +365,9 @@ void _gwidgetInit(void)
 {
 	geventListenerInit(&gl);
 	geventRegisterCallback(&gl, gwidgetEvent, 0);
-	geventAttachSource(&gl, ginputGetMouse(GMOUSE_ALL_INSTANCES), GLISTEN_MOUSEMETA|GLISTEN_MOUSEDOWNMOVES);
-
+	#if GINPUT_NEED_MOUSE
+		geventAttachSource(&gl, ginputGetMouse(GMOUSE_ALL_INSTANCES), GLISTEN_MOUSEMETA|GLISTEN_MOUSEDOWNMOVES);
+	#endif
 	#if GINPUT_NEED_KEYBOARD || GWIN_NEED_KEYBOARD
 		geventAttachSource(&gl, ginputGetKeyboard(GKEYBOARD_ALL_INSTANCES), GLISTEN_KEYUP);
 	#endif
@@ -529,6 +530,44 @@ void gwinSetText(GHandle gh, const char *text, bool_t useAlloc) {
 	_gwinUpdate(gh);
 }
 
+#if GFX_USE_GFILE && GFILE_NEED_PRINTG && GFILE_NEED_STRINGS
+	#include <stdarg.h>
+
+	void gwinPrintg(GHandle gh, const char * fmt, ...) {
+		char *str;
+		va_list va;
+		int size;
+		
+		if (!(gh->flags & GWIN_FLG_WIDGET))
+			return;
+
+		// Dispose of the old string
+		if ((gh->flags & GWIN_FLG_ALLOCTXT)) {
+			gh->flags &= ~GWIN_FLG_ALLOCTXT;
+			if (gw->text) {
+				gfxFree((void *)gw->text);
+				gw->text = "";
+			}
+		}
+
+		// Alloc the new text
+		va_start (va, fmt);
+
+		size = vsnprintg(0, 0, fmt, va) + 1;		//determine the buffer size required
+
+		if ((str = gfxAlloc(size))) {
+			gh->flags |= GWIN_FLG_ALLOCTXT;
+			vsnprintg(str, size, fmt, va);
+			gw->text = (const char *)str;
+		} else
+			gw->text = "";
+		
+		va_end (va);
+
+		_gwinUpdate(gh);
+	}
+#endif
+
 const char *gwinGetText(GHandle gh) {
 	if (!(gh->flags & GWIN_FLG_WIDGET))
 		return 0;
@@ -616,6 +655,29 @@ bool_t gwinAttachListener(GListener *pl) {
 		wvmt->ToggleAssign(gw, role, instance);
 		return geventAttachSource(&gl, gsh, GLISTEN_TOGGLE_ON|GLISTEN_TOGGLE_OFF);
 	}
+
+	bool_t gwinDetachToggle(GHandle gh, uint16_t role) {
+		uint16_t		oi;
+
+		// Is this a widget
+		if (!(gh->flags & GWIN_FLG_WIDGET))
+			return FALSE;
+
+		// Is the role valid
+		if (role >= ((gwidgetVMT *)gh->vmt)->toggleroles)
+			return FALSE;
+
+		oi = ((gwidgetVMT *)gh->vmt)->ToggleGet(gw, role);
+
+		// Remove the instance
+		if (oi != GWIDGET_NO_INSTANCE) {
+			((gwidgetVMT *)gh->vmt)->ToggleAssign(gw, role, GWIDGET_NO_INSTANCE);
+			if (!FindToggleUser(oi))
+				geventDetachSource(&gl, ginputGetToggle(oi));
+		}
+		return TRUE;
+	}
+
 #endif
 
 #if GFX_USE_GINPUT && GINPUT_NEED_DIAL
